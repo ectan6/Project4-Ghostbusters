@@ -61,7 +61,38 @@ def constructBayesNet(gameState: hunters.GameState):
     variableDomainsDict = {}
 
     "*** YOUR CODE HERE ***"
-    raiseNotDefined()
+    variables.append(PAC)
+    variables.append(GHOST0)
+    variables.append(GHOST1)
+    variables.append(OBS0)
+    variables.append(OBS1)
+
+    edges.append((GHOST0, OBS0))
+    edges.append((PAC, OBS0))
+    edges.append((PAC, OBS1))
+    edges.append((GHOST1, OBS1))
+
+    positions = [
+        (x,y)
+        for x in range(X_RANGE)
+        for y in range(Y_RANGE)
+    ]
+
+    variableDomainsDict[PAC] = positions
+    variableDomainsDict[GHOST0] = positions
+    variableDomainsDict[GHOST1] = positions
+
+    max_dist = (X_RANGE - 1) + (Y_RANGE - 1)
+    all_observations = list(range(max_dist + MAX_NOISE + 1))
+    variableDomainsDict[OBS0] = all_observations
+    variableDomainsDict[OBS1] = all_observations
+
+
+    #for var in variables:
+    #    for x in range 0 to X_RANGE:
+    #        for y in enumerate(Y_RANGE):
+    #            variableDomainsDict[var] = manhattanDistance(x,y)
+    #raiseNotDefined()
     "*** END YOUR CODE HERE ***"
 
     net = bn.constructEmptyBayesNet(variables, edges, variableDomainsDict)
