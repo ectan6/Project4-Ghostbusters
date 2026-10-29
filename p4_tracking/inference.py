@@ -610,7 +610,16 @@ class ExactInference(InferenceModule):
         position is known.
         """
         "*** YOUR CODE HERE ***"
-        raiseNotDefined()
+        # You should iterate your updates over the variable self.allPositions which includes all legal positions plus the special jail position. Beliefs represent the probability that the ghost is at a particular location, and are stored as a DiscreteDistribution object in a field called self.beliefs, which you should update.
+        pacman_position = gameState.getPacmanPosition()
+        jail_position = self.getJailPosition()
+        #look at all positions
+        for pos in self.allPositions:
+            # get the observation probability using observation, pacman position, ghost position, and jail position
+            prob = self.getObservationProb(observation, pacman_position, pos, jail_position)
+            # update belief by multiplying prob with belief
+            self.beliefs[pos] *= prob
+        #raiseNotDefined()
         "*** END YOUR CODE HERE ***"
         self.beliefs.normalize()
     
