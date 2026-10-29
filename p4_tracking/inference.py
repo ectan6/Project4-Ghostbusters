@@ -771,5 +771,19 @@ class ParticleFilter(InferenceModule):
         gameState.
         """
         "*** YOUR CODE HERE ***"
-        raiseNotDefined()
+
+        #As in the elapseTime method of the ExactInference class, you should use: newPosDist = self.getPositionDistribution(gameState, oldPos)
+        # This line of code obtains the distribution over new positions for the ghost, given its previous position (oldPos). The sample method of the DiscreteDistribution class will also be useful.
+
+        #same like exact, but update particles instead of beliefs 
+        new_particles = []
+        for oldPos in self.particles:
+            #first get the distribution over new positions for the ghost given the oldPos
+            newPosDist = self.getPositionDistribution(gameState, oldPos)
+            # the sample
+            new_particle = newPosDist.sample()
+            new_particles.append(new_particle)
+        self.particles = new_particles
+
+        #raiseNotDefined()
         "*** END YOUR CODE HERE ***"
