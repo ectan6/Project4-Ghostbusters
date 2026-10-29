@@ -400,12 +400,12 @@ class DiscreteDistribution(dict):
         """
         "*** YOUR CODE HERE ***"
         total = self.total()
-        target = random.random * total
+        target = random.random() * total
         sum = 0 
 
         for key, value in self.items():
             sum += value
-            if target < self.cumulative:
+            if target < sum:
                 return key
             
         #raiseNotDefined()
@@ -637,7 +637,21 @@ class ExactInference(InferenceModule):
         current position is known.
         """
         "*** YOUR CODE HERE ***"
-        raiseNotDefined()
+        # given where the ghost might have been, predict where it will be next using getPositionDistribution
+        # new belief = sum over all ways the ghost could have moved to that position of (the probability it was at the previous position * the probability it moved to the new position)
+        
+        #new array to not overwrite
+        new_beliefs = DiscreteDistribution()
+        for oldPos in self.allPositions:
+            #Where oldPos refers to the previous ghost position. newPosDist is a DiscreteDistribution object, where for each position p in self.allPositions, newPosDist[p] is the probability that the ghost is at position p at time t+1, given that the ghost is at position oldPos at time t.
+            newPosDist = self.getPositionDistribution(gameState, oldPos)
+            for newPos, prob in newPosDist.items():
+                # weighted sum
+                new_beliefs[newPos] += self.beliefs[oldPos] * prob
+        new_beliefs.normalize()
+        self.beliefs = new_beliefs    
+    
+       #raiseNotDefined()
         "*** END YOUR CODE HERE ***"
 
     def getBeliefDistribution(self):
@@ -669,7 +683,18 @@ class ParticleFilter(InferenceModule):
         """
         self.particles = []
         "*** YOUR CODE HERE ***"
-        raiseNotDefined()
+        #A particle (sample) is a ghost position in this inference problem. 
+        # We recommend thinking about how the mod operator is useful for initializeUniformly.
+        #store particles in a lits: A list is simply a collection of unweighted variables (positions in this case).
+        
+        # number of legal positions for the particles to be in
+        num_legal_positions = len(self.legalPositions)
+        #use mod operator to loop through legal positions and make them all even because it wraps around
+        for i in range(self.numParticles):
+            pos = self.legalPositions[i % num_legal_positions]
+            self.particles.append(pos)
+
+        #raiseNotDefined()
         "*** END YOUR CODE HERE ***"
 
     def getBeliefDistribution(self):
@@ -681,7 +706,16 @@ class ParticleFilter(InferenceModule):
         This function should return a normalized distribution.
         """
         "*** YOUR CODE HERE ***"
-        raiseNotDefined()
+         #The getBeliefDistribution method then takes the list of particles and converts it into a DiscreteDistribution object.
+        
+        beliefs = DiscreteDistribution()
+        #count the number of particles that are in each position
+        for particle in self.particles:
+            beliefs[particle] += 1 
+        #then use the distribution to normalize and turn the counts into probabilities
+        beliefs.normalize()
+        return beliefs
+        #raiseNotDefined()
         "*** END YOUR CODE HERE ***"
     
     ########### ########### ###########
@@ -701,7 +735,30 @@ class ParticleFilter(InferenceModule):
         the DiscreteDistribution may be useful.
         """
         "*** YOUR CODE HERE ***"
-        raiseNotDefined()
+        # This method constructs a weight distribution over self.particles where the weight of a particle is the probability of the observation given Pacman’s position and that particle location. Then, we resample from this weighted distribution to construct our new list of particles.
+        # use self.getObservationProb to find the probability of an observation given Pacman’s position, a potential ghost position, and the jail position. The sample method of the DiscreteDistribution class will also be useful. As a reminder, you can obtain Pacman’s position using gameState.getPacmanPosition(), and the jail position using self.getJailPosition().
+
+        pacman_position = gameState.getPacmanPosition()
+        jail_position = self.getJailPosition()
+
+        #first weigh the particles based on probability of observation
+        weights = DiscreteDistribution()
+        for particle in self.particles:
+            prob = self.getObservationProb(observation, pacman_position, particle, jail_position)
+            weights[particle] += prob
+        #special case -> call initializeUniformly if all particles receive zero weight
+        if weights.total() == 0:
+            self.initializeUniformly(gameState)
+            return
+
+        #ok now resample from the weighted distribution ot make new list of particles
+        new_particles = []
+        for i in range(self.numParticles):
+            new_particle = weights.sample()
+            new_particles.append(new_particle)
+        self.particles = new_particles
+
+        #raiseNotDefined()
         "*** END YOUR CODE HERE ***"
     
     ########### ########### ###########

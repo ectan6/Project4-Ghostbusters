@@ -126,6 +126,7 @@ from game import Directions
 
 class GreedyBustersAgent(BustersAgent):
     "An agent that charges the closest ghost."
+    
 
     def registerInitialState(self, gameState: busters.GameState):
         "Pre-computes the distance between every two points."
@@ -149,5 +150,35 @@ class GreedyBustersAgent(BustersAgent):
             [beliefs for i, beliefs in enumerate(self.ghostBeliefs)
              if livingGhosts[i+1]]
         "*** YOUR CODE HERE ***"
-        raiseNotDefined()
+        # To find the maze distance between any two positions pos1 and pos2, use self.distancer.getDistance(pos1, pos2)
+        # To find the successor position of a position after an action: successorPosition = Actions.getSuccessor(position, action)
+        # You are provided with livingGhostPositionDistributions, a list of DiscreteDistribution objects representing the position belief distributions for each of the ghosts that are still uncaptured.
+
+        #first guess all the ghost positions
+        ghost_positions_init = []
+        for ghost in livingGhostPositionDistributions:
+            likely_squre = ghost.argMax()
+            ghost_positions_init.append(likely_squre)
+
+        #then look at every legal action and see which one brings pacman closest to the closest ghost
+        bestScore = float('inf')
+        bestAction = None
+        for action in legal:
+            successorPosition = Actions.getSuccessor(pacmanPosition, action)
+            #find the closest ghost to the successor position
+            closest_ghost_distance = float('inf')
+            for ghost_position in ghost_positions_init:
+                # find the distance to get the closest ghost
+                distance = self.distancer.getDistance(successorPosition, ghost_position)
+                if distance < closest_ghost_distance:
+                    closest_ghost_distance = distance
+            #if this action brings pacman closer to the closest ghostthen update bestScore and bestAction
+            if closest_ghost_distance < bestScore:
+                bestScore = closest_ghost_distance
+                bestAction = action
+
+        #and return that action
+        return bestAction
+        
+        #raiseNotDefined()
         "*** END YOUR CODE HERE ***"
